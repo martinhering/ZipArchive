@@ -109,6 +109,39 @@
     return [self CreateZipFile2:zipFile append:isAppend];
 }
 
+-(BOOL) addDirectoryToZip:(NSString*)directory parentPath:(NSString *)parentPath
+{
+    NSString *basePath=[directory lastPathComponent];
+    if (parentPath)
+        basePath=[parentPath stringByAppendingPathComponent:basePath];
+        
+    
+    NSDirectoryEnumerator *dirEnumerator = [_fileManager enumeratorAtURL:[NSURL fileURLWithPath:directory]
+                                              includingPropertiesForKeys:@[NSURLNameKey, NSURLIsDirectoryKey]
+                                                                 options:NSDirectoryEnumerationSkipsHiddenFiles
+                                                            errorHandler:nil];
+    
+    for (NSURL *theURL in dirEnumerator)
+    {
+        NSNumber *isDirectory;
+        [theURL getResourceValue:&isDirectory forKey:NSURLIsDirectoryKey error:NULL];
+        if (![isDirectory boolValue])
+        {
+            BOOL result=[self addFileToZip:[theURL path] newname:[NSString stringWithFormat:@"%@/%@",basePath,[theURL lastPathComponent]]];
+            if (!result)
+                return NO;
+        }
+        else
+        {
+            BOOL result=[self addDirectoryToZip:[theURL path] parentPath:basePath];
+            if (!result)
+                return NO;
+        }
+    }
+    
+    return YES;
+}
+
 /**
  * add an existing file on disk to the zip archive, compressing it.
  *
