@@ -109,12 +109,12 @@
     return [self CreateZipFile2:zipFile append:isAppend];
 }
 
--(BOOL) addDirectoryToZip:(NSString*)directory parentPath:(NSString *)parentPath
+-(BOOL) addDirectoryToZip:(NSString*)directory newName:(NSString*)newName parentPath:(NSString *)parentPath
 {
-    NSString *basePath=[directory lastPathComponent];
-    if (parentPath)
-        basePath=[parentPath stringByAppendingPathComponent:basePath];
-        
+    NSString *basePath = (newName) ? newName : [directory lastPathComponent];
+    if (parentPath) {
+        basePath = [parentPath stringByAppendingPathComponent:basePath];
+    }
     
     NSDirectoryEnumerator *dirEnumerator = [_fileManager enumeratorAtURL:[NSURL fileURLWithPath:directory]
                                               includingPropertiesForKeys:@[NSURLNameKey, NSURLIsDirectoryKey]
@@ -133,7 +133,7 @@
         }
         else
         {
-            BOOL result=[self addDirectoryToZip:[theURL path] parentPath:basePath];
+            BOOL result=[self addDirectoryToZip:[theURL path] newName:nil parentPath:basePath];
             if (!result)
                 return NO;
         }
